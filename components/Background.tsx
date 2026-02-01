@@ -24,7 +24,7 @@ export const backgrounds = [
 ];
 
 // 超时警告专用莲花背景（暗色背景粉色莲花）
-const lotusBackground = "https://images.unsplash.com/photo-1606567595334-d39972c85dfd?auto=format&fit=crop&q=80&w=2400"; // 暗色背景莲花
+const lotusBackground = "https://images.unsplash.com/photo-1474557157379-8aa74a6ef541?auto=format&fit=crop&q=80&w=2400"; // 暗色背景莲花
 
 const Background: React.FC<BackgroundProps> = ({ currentView, bgIndex, theme, isOvertime = false, isOvertimeWarning = false }) => {
   const isDark = theme === 'DARK';
