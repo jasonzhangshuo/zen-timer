@@ -132,6 +132,9 @@ const HomeView: React.FC<HomeViewProps> = ({
         </div>
         <div className="text-xl font-extralight tracking-[0.8em] opacity-20 flex items-center">
           寻径<span className="mx-3 opacity-30">·</span>归真
+          {typeof __BUILD_TIME__ !== 'undefined' && (
+            <span className="ml-4 text-[9px] opacity-15 font-sans-sc tabular-nums" title="构建时间">{__BUILD_TIME__}</span>
+          )}
         </div>
       </motion.div>
     </div>
