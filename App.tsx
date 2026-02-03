@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { ViewType, ThemeMode, MAX_TIMER_SECONDS } from './types';
+import { ViewType, ThemeMode, MAX_TIMER_SECONDS, TIMER_PRESETS } from './types';
 import { TRACKS } from './tracks';
 import HomeView from './components/HomeView';
 import PlayerView from './components/PlayerView';
@@ -271,6 +271,8 @@ const App: React.FC = () => {
                   setSelectedTimerDuration(seconds);
                   setCountdown(seconds);
                   setIsPlaying(false);
+                  const presetIdx = TIMER_PRESETS.indexOf(seconds);
+                  if (presetIdx >= 0) setBgIndex(presetIdx % backgrounds.length);
                 }}
                 onAddMinute={() => {
                   setSelectedTimerDuration((prev) => Math.min(prev + 60, MAX_TIMER_SECONDS));
