@@ -29,11 +29,13 @@ const App: React.FC = () => {
   // Timer: 固定时长选择 1/3/5/20 分钟，默认 5 分钟
   const [selectedTimerDuration, setSelectedTimerDuration] = useState(300); // 5 min
   const [countdown, setCountdown] = useState(selectedTimerDuration);
+  const prevCountdownRef = useRef<number>(300);
 
   // 进入计时器或切换时长时同步倒计时
   useEffect(() => {
     if (view === ViewType.TIMER) {
       setCountdown(selectedTimerDuration);
+      prevCountdownRef.current = selectedTimerDuration;
       setIsPlaying(false);
     }
   }, [view, selectedTimerDuration]);
@@ -95,6 +97,41 @@ const App: React.FC = () => {
     }
     return () => clearInterval(interval);
   }, [isPlaying, view]);
+
+  // 倒计时结束时播放磬/颂钵声（仅从 1→0 触发一次）
+  // 音源：Buddha bell / Tibetan singing bowl (CC BY-NC 4.0). 可替换为本地 timer-bell.mp3 以离线或商用.
+  const TIMER_END_BELL_URL = 'https://orangefreesounds.com/wp-content/uploads/2022/12/Buddha-bell-sound.mp3';
+
+  const playTimerEndBell = useCallback(() => {
+    const audio = new Audio(TIMER_END_BELL_URL);
+    audio.volume = 0.8;
+    const played = audio.play().catch(() => {
+      // 外链失败（CORS/网络）时回退到合成钟声
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(256, now);
+        osc.frequency.setValueAtTime(384, now + 0.08);
+        osc.frequency.setValueAtTime(320, now + 0.2);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 2.5);
+        osc.start(now);
+        osc.stop(now + 2.5);
+      } catch (_) {}
+    });
+  }, []);
+
+  useEffect(() => {
+    if (view !== ViewType.TIMER) return;
+    const prev = prevCountdownRef.current;
+    prevCountdownRef.current = countdown;
+    if (prev === 1 && countdown === 0) playTimerEndBell();
+  }, [view, countdown, playTimerEndBell]);
 
   const togglePlay = useCallback(() => setIsPlaying((prev) => !prev), []);
   const toggleTheme = useCallback(() => setTheme(prev => prev === 'DARK' ? 'LIGHT' : 'DARK'), []);
