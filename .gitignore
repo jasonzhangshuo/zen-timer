@@ -26,3 +26,7 @@ npm-debug.log*
 
 # Cursor
 .cursor/
+
+# MCP config (may contain API keys)
+mcp.json
+mcp.jason

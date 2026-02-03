@@ -3,7 +3,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { X, Play, Pause } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+/** 播放界面中央口诀：按曲目切换 */
+const PHRASE_BY_TRACK: Record<string, string> = {
+  'zen-10': '观呼吸',
+  chushifan: '随闻入观',
+  cijing: '善愿成就',
+};
+
 interface PlayerViewProps {
+  trackId: string;
+  trackTitle: string;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
@@ -14,12 +23,15 @@ interface PlayerViewProps {
 type CaptionItem = { start: number; end: number; text: string };
 
 const PlayerView: React.FC<PlayerViewProps> = ({ 
+  trackId,
+  trackTitle,
   isPlaying, 
   currentTime, 
   duration, 
   onTogglePlay, 
   onBack
 }) => {
+  const phrase = PHRASE_BY_TRACK[trackId] ?? '观呼吸';
   const [captions, setCaptions] = useState<CaptionItem[]>([]);
   const [isProgressHovered, setIsProgressHovered] = useState(false);
 
@@ -66,7 +78,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({
         className="w-full flex justify-between items-center"
       >
         <div className="space-y-1">
-          <h2 className="text-xl font-extralight tracking-[0.5em] text-white/90">正念静坐</h2>
+          <h2 className="text-xl font-extralight tracking-[0.5em] text-white/90">{trackTitle}</h2>
           <p className="text-[9px] tracking-[0.4em] opacity-30 uppercase">Fellowship Session</p>
         </div>
         <button 
@@ -86,7 +98,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({
             className="text-center space-y-4"
           >
             <span className="text-[10px] tracking-[0.8em] text-amber-500/60 uppercase font-light">Guide Phase</span>
-            <h1 className="text-6xl font-extralight tracking-[0.6em] ml-6">观呼吸</h1>
+            <h1 className="text-6xl font-extralight tracking-[0.6em] ml-6">{phrase}</h1>
             <motion.p
               key={currentCaption?.text || 'empty'}
               initial={{ opacity: 0, y: 6, filter: 'blur(6px)' }}

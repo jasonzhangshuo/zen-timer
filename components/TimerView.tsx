@@ -1,18 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
-import { Home, RefreshCw, Play, Pause, Maximize2, Minimize2, Sparkles, Clock } from 'lucide-react';
+import { Home, RefreshCw, Play, Pause, Maximize2, Minimize2, Sparkles, Clock, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SharingMode } from '../types';
+import { TIMER_PRESETS, MAX_TIMER_SECONDS } from '../types';
 
 interface TimerViewProps {
   isPlaying: boolean;
   countdown: number;
   totalDuration: number;
-  sharingMode: SharingMode;
   onTogglePlay: () => void;
   onReset: () => void;
   onBack: () => void;
-  onSwitchMode: (mode: SharingMode) => void;
+  onSelectDuration: (seconds: number) => void;
+  onAddMinute: () => void;
   onNextBg: () => void;
   onToggleFullscreen: () => void;
   isFullscreen: boolean;
@@ -66,11 +66,11 @@ const TimerView: React.FC<TimerViewProps> = ({
   isPlaying, 
   countdown, 
   totalDuration,
-  sharingMode,
   onTogglePlay, 
   onReset,
   onBack, 
-  onSwitchMode,
+  onSelectDuration,
+  onAddMinute,
   onNextBg,
   onToggleFullscreen,
   isFullscreen
@@ -143,25 +143,6 @@ const TimerView: React.FC<TimerViewProps> = ({
           <span className="text-[10px] tracking-[1em] font-light uppercase opacity-50">Deep Silence</span>
         </div>
         
-        <div className="flex items-center space-x-12">
-          {['MAIN', 'SUPPLEMENT'].map((mode) => (
-            <button 
-              key={mode}
-              onClick={() => onSwitchMode(mode as SharingMode)}
-              className={`text-[11px] tracking-[0.5em] transition-all duration-700 relative py-1 ${
-                sharingMode === mode 
-                  ? (mode === 'MAIN' ? 'text-white opacity-100' : 'text-amber-500 opacity-100') 
-                  : 'opacity-50 hover:opacity-80'
-              }`}
-            >
-              {mode === 'MAIN' ? '主分享' : '补充分享'}
-              {sharingMode === mode && (
-                <motion.div layoutId="mode-underline" className={`absolute -bottom-1 left-0 w-full h-[1px] ${mode === 'MAIN' ? 'bg-white' : 'bg-amber-500'}`} />
-              )}
-            </button>
-          ))}
-        </div>
-
         <div className="flex items-center opacity-40">
           <button onClick={onToggleFullscreen} className="hover:opacity-100 transition-opacity duration-700" title={isFullscreen ? "退出全屏" : "全屏"}>
             {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
@@ -303,6 +284,43 @@ const TimerView: React.FC<TimerViewProps> = ({
         onMouseEnter={() => setIsControlsHovered(true)}
         onMouseLeave={() => setIsControlsHovered(false)}
       >
+        {/* 固定时长选择：1 / 3 / 5 / 20 分钟；+1 分钟（点击加 1 分钟，上限 60 分钟） */}
+        <div className="flex items-center gap-6 flex-wrap justify-center">
+          {TIMER_PRESETS.map((seconds) => {
+            const label = seconds === 60 ? '1分钟' : seconds === 180 ? '3分钟' : seconds === 300 ? '5分钟' : '20分钟';
+            const isActive = totalDuration === seconds;
+            return (
+              <button
+                key={seconds}
+                onClick={() => onSelectDuration(seconds)}
+                className={`text-[11px] tracking-[0.5em] transition-all duration-700 relative py-2 px-4 rounded-full ${
+                  isActive ? 'text-white opacity-100 bg-white/10' : 'opacity-50 hover:opacity-80'
+                }`}
+              >
+                {label}
+                {isActive && (
+                  <motion.div layoutId="duration-underline" className="absolute inset-0 rounded-full border border-white/20 pointer-events-none" />
+                )}
+              </button>
+            );
+          })}
+          <motion.button
+            onClick={onAddMinute}
+            disabled={totalDuration >= MAX_TIMER_SECONDS}
+            whileHover={totalDuration < MAX_TIMER_SECONDS ? { scale: 1.05, opacity: 1 } : {}}
+            whileTap={totalDuration < MAX_TIMER_SECONDS ? { scale: 0.98 } : {}}
+            className={`flex items-center gap-1.5 text-[11px] tracking-[0.4em] py-2 px-3 rounded-full border transition-all duration-500 ${
+              totalDuration >= MAX_TIMER_SECONDS
+                ? 'opacity-30 cursor-not-allowed border-white/10'
+                : 'opacity-60 hover:opacity-100 border-white/20 hover:border-white/40'
+            }`}
+            title="加 1 分钟（最多 60 分钟）"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>+1</span>
+          </motion.button>
+        </div>
+
         <div className="flex items-center space-x-20 relative">
           {/* Glow behind play button - always present, just fades */}
           <motion.div 
@@ -382,7 +400,7 @@ const TimerView: React.FC<TimerViewProps> = ({
             }}
             className={`text-center text-[10px] tracking-[0.5em] uppercase ${isExpiring || isOvertime ? 'text-amber-500' : 'text-white'}`}
           >
-            {sharingMode === 'MAIN' ? '主分享' : '补充分享'} • {Math.floor(totalDuration/60)}:00
+            {Math.floor(totalDuration / 60)}:00
           </motion.p>
         </div>
       </motion.div>

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { ViewType, SharingMode, ThemeMode } from './types';
+import { ViewType, ThemeMode, MAX_TIMER_SECONDS } from './types';
+import { TRACKS } from './tracks';
 import HomeView from './components/HomeView';
 import PlayerView from './components/PlayerView';
 import TimerView from './components/TimerView';
@@ -11,29 +12,31 @@ const App: React.FC = () => {
   const [view, setView] = useState<ViewType>(ViewType.HOME);
   const [isPlaying, setIsPlaying] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>('DARK');
-  const [sharingMode, setSharingMode] = useState<SharingMode>('SUPPLEMENT');
   const [bgIndex, setBgIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioSrc = useMemo(() => new URL('./zen-mindfulness-10min.mp3', import.meta.url).href, []);
+  const [currentTrackId, setCurrentTrackId] = useState(TRACKS[0].id);
+  const audioSrc = useMemo(
+    () => TRACKS.find((t) => t.id === currentTrackId)?.audioUrl ?? TRACKS[0].audioUrl,
+    [currentTrackId]
+  );
+  const currentTrack = useMemo(() => TRACKS.find((t) => t.id === currentTrackId) ?? TRACKS[0], [currentTrackId]);
 
   // Time states
   const [currentTime, setCurrentTime] = useState(0);
-  const [playerDuration, setPlayerDuration] = useState(600); // Fallback to 10 minutes
+  const [playerDuration, setPlayerDuration] = useState(600);
   
-  // Timer specific logic
-  const timerDurations = useMemo(() => ({
-    MAIN: 300, // 5:00
-    SUPPLEMENT: 180 // 3:00
-  }), []);
+  // Timer: 固定时长选择 1/3/5/20 分钟，默认 5 分钟
+  const [selectedTimerDuration, setSelectedTimerDuration] = useState(300); // 5 min
+  const [countdown, setCountdown] = useState(selectedTimerDuration);
 
-  const [countdown, setCountdown] = useState(timerDurations[sharingMode]);
-
-  // Sync countdown when sharing mode changes
+  // 进入计时器或切换时长时同步倒计时
   useEffect(() => {
-    setCountdown(timerDurations[sharingMode]);
-    setIsPlaying(false);
-  }, [sharingMode, timerDurations]);
+    if (view === ViewType.TIMER) {
+      setCountdown(selectedTimerDuration);
+      setIsPlaying(false);
+    }
+  }, [view, selectedTimerDuration]);
 
   // Audio player logic (sync time + auto-transition on end)
   useEffect(() => {
@@ -50,7 +53,6 @@ const App: React.FC = () => {
     };
     const handleEnded = () => {
       setIsPlaying(false);
-      setSharingMode('MAIN');
       setTimeout(() => setView(ViewType.TIMER), 600); // Smooth delay
     };
 
@@ -119,23 +121,38 @@ const App: React.FC = () => {
     setView(newView);
     setIsPlaying(false);
     if (newView === ViewType.PLAYER) {
-      setCurrentTime(0); // Reset player when entering
+      setCurrentTime(0);
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
       }
     }
   }, []);
 
+  const selectTrackAndPlay = useCallback((trackId: string) => {
+    const track = TRACKS.find((t) => t.id === trackId) ?? TRACKS[0];
+    setCurrentTrackId(trackId);
+    setCurrentTime(0);
+    setPlayerDuration(track.durationSeconds);
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.src = track.audioUrl;
+      audioRef.current.currentTime = 0;
+    }
+    setView(ViewType.PLAYER);
+  }, []);
+
+  const pageTransition = { duration: 1.1, ease: [0.25, 0.46, 0.45, 0.94] };
+
   const pageVariants = {
-    initial: { opacity: 0, y: 10, scale: 0.98, filter: 'blur(8px)' },
+    initial: { opacity: 0, y: 16, scale: 0.98, filter: 'blur(10px)' },
     animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
-    exit: { opacity: 0, y: -10, scale: 1.02, filter: 'blur(12px)' }
+    exit: { opacity: 0, y: -12, scale: 1.02, filter: 'blur(14px)' }
   };
 
   const backVariants = {
-    initial: { opacity: 0, y: -10, scale: 1.02, filter: 'blur(8px)' },
+    initial: { opacity: 0, y: -12, scale: 1.02, filter: 'blur(10px)' },
     animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
-    exit: { opacity: 0, y: 10, scale: 0.98, filter: 'blur(12px)' }
+    exit: { opacity: 0, y: 12, scale: 0.98, filter: 'blur(14px)' }
   };
 
   const isOvertime = view === ViewType.TIMER && countdown < 0;
@@ -144,10 +161,16 @@ const App: React.FC = () => {
   return (
     <div className={`relative w-full h-screen overflow-hidden transition-colors duration-1000 ${theme === 'DARK' ? 'bg-black text-white' : 'bg-[#f5f5f0] text-[#2c2c2c]'} selection:bg-white/20`}>
       <audio ref={audioRef} src={audioSrc} preload="auto" />
-      <Background currentView={view} bgIndex={bgIndex} theme={theme} isOvertime={isOvertime} isOvertimeWarning={isOvertimeWarning} />
+      <Background
+        currentView={view}
+        bgIndex={view === ViewType.PLAYER ? (currentTrack.backgroundIndex ?? 0) : bgIndex}
+        theme={theme}
+        isOvertime={isOvertime}
+        isOvertimeWarning={isOvertimeWarning}
+      />
       
       <div className="relative z-10 w-full h-full">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
           {view === ViewType.HOME && (
             <motion.div
               key="home"
@@ -155,11 +178,12 @@ const App: React.FC = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full h-full"
+              transition={pageTransition}
+              className="absolute inset-0 w-full h-full"
             >
               <HomeView 
-                onEnter={() => navigateTo(ViewType.PLAYER)} 
+                tracks={TRACKS}
+                onSelectTrack={selectTrackAndPlay}
                 onTimer={() => navigateTo(ViewType.TIMER)}
                 onToggleFullscreen={toggleFullscreen}
                 isFullscreen={isFullscreen}
@@ -174,10 +198,12 @@ const App: React.FC = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full h-full"
+              transition={pageTransition}
+              className="absolute inset-0 w-full h-full"
             >
               <PlayerView 
+                trackId={currentTrack.id}
+                trackTitle={currentTrack.title}
                 isPlaying={isPlaying}
                 currentTime={currentTime}
                 duration={playerDuration}
@@ -194,18 +220,25 @@ const App: React.FC = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full h-full"
+              transition={pageTransition}
+              className="absolute inset-0 w-full h-full"
             >
               <TimerView 
                 isPlaying={isPlaying}
                 countdown={countdown}
-                totalDuration={timerDurations[sharingMode]}
-                sharingMode={sharingMode}
+                totalDuration={selectedTimerDuration}
                 onTogglePlay={togglePlay}
-                onReset={() => setCountdown(timerDurations[sharingMode])}
+                onReset={() => setCountdown(selectedTimerDuration)}
                 onBack={() => navigateTo(ViewType.HOME)}
-                onSwitchMode={setSharingMode}
+                onSelectDuration={(seconds) => {
+                  setSelectedTimerDuration(seconds);
+                  setCountdown(seconds);
+                  setIsPlaying(false);
+                }}
+                onAddMinute={() => {
+                  setSelectedTimerDuration((prev) => Math.min(prev + 60, MAX_TIMER_SECONDS));
+                  setCountdown((prev) => Math.min(prev + 60, MAX_TIMER_SECONDS));
+                }}
                 onNextBg={nextBackground}
                 onToggleFullscreen={toggleFullscreen}
                 isFullscreen={isFullscreen}
