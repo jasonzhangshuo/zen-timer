@@ -34,27 +34,16 @@ const zenQuotes = [
 ];
 
 const Digit = ({ value, color, glowIntensity }: { value: string; color: string; glowIntensity: number }) => (
-  <div className="relative h-[280px] flex items-center justify-center overflow-hidden w-[155px]">
+  <div className="relative h-[140px] flex items-center justify-center overflow-hidden w-[80px] md:h-[280px] md:w-[155px]">
     <AnimatePresence mode="popLayout">
       <motion.span
         key={value}
         initial={{ opacity: 0, scale: 0.9, filter: 'blur(15px)' }}
-        animate={{ 
-          opacity: 1, 
-          scale: 1, 
-          filter: 'blur(0px)',
-        }}
+        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
         exit={{ opacity: 0, scale: 1.1, filter: 'blur(15px)' }}
-        transition={{ 
-          duration: 1.2, 
-          ease: [0.22, 1, 0.36, 1],
-          opacity: { duration: 0.8 }
-        }}
-        className={`absolute text-[280px] leading-none font-thin tabular-nums select-none transition-all duration-1000`}
-        style={{ 
-          color: color,
-          textShadow: glowIntensity > 0 ? `0 0 ${glowIntensity * 50}px ${color}` : 'none'
-        }}
+        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], opacity: { duration: 0.8 } }}
+        className="absolute text-[140px] leading-none font-thin tabular-nums select-none transition-all duration-1000 md:text-[280px]"
+        style={{ color, textShadow: glowIntensity > 0 ? `0 0 ${glowIntensity * 50}px ${color}` : 'none' }}
       >
         {value}
       </motion.span>
@@ -129,29 +118,29 @@ const TimerView: React.FC<TimerViewProps> = ({
   const currentQuotes = zenQuotes[quoteIndex];
 
   return (
-    <div className={`flex flex-col items-center justify-between h-full py-10 px-12 font-sans-sc transition-colors duration-1000`}>
+    <div className={`flex flex-col items-center justify-between h-full py-5 px-4 font-sans-sc transition-colors duration-1000 md:py-10 md:px-12`}>
       {/* Top Navigation */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full flex justify-between items-center z-20"
       >
-        <div className="flex items-center space-x-12">
-          <button onClick={onBack} className="transition-opacity duration-700 opacity-40 hover:opacity-100">
+        <div className="flex items-center space-x-4 md:space-x-12">
+          <button onClick={onBack} className="transition-opacity duration-700 opacity-40 hover:opacity-100 active:opacity-100 min-w-[44px] min-h-[44px] flex items-center justify-center">
             <Home className="w-5 h-5" />
           </button>
-          <span className="text-[10px] tracking-[1em] font-light uppercase opacity-50">Deep Silence</span>
+          <span className="text-[9px] tracking-[0.6em] font-light uppercase opacity-50 md:text-[10px] md:tracking-[1em]">Deep Silence</span>
         </div>
         
         <div className="flex items-center opacity-40">
-          <button onClick={onToggleFullscreen} className="hover:opacity-100 transition-opacity duration-700" title={isFullscreen ? "退出全屏" : "全屏"}>
-            {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+          <button onClick={onToggleFullscreen} className="hover:opacity-100 active:opacity-100 transition-opacity duration-700 min-w-[44px] min-h-[44px] flex items-center justify-center" title={isFullscreen ? "退出全屏" : "全屏"}>
+            {isFullscreen ? <Minimize2 className="w-4 h-4 md:w-5 md:h-5" /> : <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />}
           </button>
         </div>
       </motion.div>
 
-      {/* Main Display */}
-      <div className="flex-1 w-full flex items-center justify-center relative">
+      {/* Main Display：手机隐藏两侧禅语；桌面显示 */}
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 overflow-hidden md:overflow-visible">
         <AnimatePresence mode="wait">
           <motion.div 
             key={`left-${quoteIndex}`}
@@ -159,20 +148,20 @@ const TimerView: React.FC<TimerViewProps> = ({
             animate={{ opacity: 0.6, x: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, x: 10, filter: 'blur(10px)' }}
             transition={{ duration: 2, ease: "easeInOut" }}
-            className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col space-y-8 text-lg font-light tracking-[0.8em] pointer-events-none select-none" 
+            className="hidden absolute left-0 top-1/2 -translate-y-1/2 md:flex flex-col space-y-8 text-lg font-light tracking-[0.8em] pointer-events-none select-none" 
             style={{ writingMode: 'vertical-rl' }}
           >
             {currentQuotes.left.map((text, i) => <span key={i}>{text}</span>)}
           </motion.div>
         </AnimatePresence>
 
-        <div className="flex flex-col items-center">
-          <div className="flex items-center justify-center">
+        <div className="flex flex-col items-center flex-1 justify-center md:flex-initial">
+          <div className="flex items-center justify-center scale-90 origin-center md:scale-100">
             <div className="flex">
               <Digit value={min[0]} color={timerColor} glowIntensity={glowIntensity} />
               <Digit value={min[1]} color={timerColor} glowIntensity={glowIntensity} />
             </div>
-            <div className="flex flex-col space-y-16 py-8 px-6">
+            <div className="flex flex-col space-y-8 py-4 px-3 md:space-y-16 md:py-8 md:px-6">
               <motion.div 
                 animate={{ opacity: [0.2, 0.7, 0.2] }} 
                 transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} 
@@ -193,7 +182,7 @@ const TimerView: React.FC<TimerViewProps> = ({
           </div>
 
           {/* Dynamic Phase Messaging */}
-          <div className="mt-8 h-12 flex items-center justify-center">
+          <div className="mt-4 h-10 flex items-center justify-center md:mt-8 md:h-12">
             <AnimatePresence mode="wait">
               {isOvertime ? (
                 <motion.div 
@@ -249,7 +238,7 @@ const TimerView: React.FC<TimerViewProps> = ({
           </div>
         </div>
 
-        {/* Breathing Halo Effect */}
+        {/* Breathing Halo Effect：手机缩小避免占满屏 */}
         {isPlaying && (
           <motion.div
             animate={{ 
@@ -257,7 +246,7 @@ const TimerView: React.FC<TimerViewProps> = ({
               opacity: isOvertime ? [0.1, 0.25, 0.1] : (isExpiring ? [0.03, 0.1, 0.03] : [0.02, 0.08, 0.02]) 
             }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className={`absolute w-[600px] h-[600px] rounded-full blur-[100px] pointer-events-none transition-colors duration-1000 ${isExpiring || isOvertime ? 'bg-amber-500/30' : 'bg-white/20'}`}
+            className={`absolute w-[320px] h-[320px] rounded-full blur-[60px] pointer-events-none transition-colors duration-1000 md:w-[600px] md:h-[600px] md:blur-[100px] ${isExpiring || isOvertime ? 'bg-amber-500/30' : 'bg-white/20'}`}
           />
         )}
 
@@ -268,7 +257,7 @@ const TimerView: React.FC<TimerViewProps> = ({
             animate={{ opacity: 0.55, x: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, x: -10, filter: 'blur(10px)' }}
             transition={{ duration: 2, ease: "easeInOut" }}
-            className="absolute right-0 top-1/2 -translate-y-1/2 text-sm font-light tracking-[1em] pointer-events-none select-none" 
+            className="hidden absolute right-0 top-1/2 -translate-y-1/2 md:block text-sm font-light tracking-[1em] pointer-events-none select-none" 
             style={{ writingMode: 'vertical-rl' }}
           >
             <span>{currentQuotes.right}</span>
@@ -276,16 +265,16 @@ const TimerView: React.FC<TimerViewProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Footer Controls */}
+      {/* Footer Controls：手机缩小间距、按钮易点 */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }} 
         animate={{ opacity: 1, y: 0 }} 
-        className="w-full flex flex-col items-center space-y-12 pb-8"
+        className="w-full flex flex-col items-center space-y-8 pb-6 md:space-y-12 md:pb-8"
         onMouseEnter={() => setIsControlsHovered(true)}
         onMouseLeave={() => setIsControlsHovered(false)}
       >
-        {/* 固定时长选择：1 / 3 / 5 / 20 分钟；+1 分钟（点击加 1 分钟，上限 60 分钟） */}
-        <div className="flex items-center gap-6 flex-wrap justify-center">
+        {/* 固定时长选择：1 / 3 / 5 / 20 分钟；+1 分钟 */}
+        <div className="flex items-center gap-3 flex-wrap justify-center md:gap-6">
           {TIMER_PRESETS.map((seconds) => {
             const label = seconds === 60 ? '1分钟' : seconds === 180 ? '3分钟' : seconds === 300 ? '5分钟' : '20分钟';
             const isActive = totalDuration === seconds;
@@ -293,8 +282,8 @@ const TimerView: React.FC<TimerViewProps> = ({
               <button
                 key={seconds}
                 onClick={() => onSelectDuration(seconds)}
-                className={`text-[11px] tracking-[0.5em] transition-all duration-700 relative py-2 px-4 rounded-full ${
-                  isActive ? 'text-white opacity-100 bg-white/10' : 'opacity-50 hover:opacity-80'
+                className={`text-[11px] tracking-[0.5em] transition-all duration-700 relative py-2.5 px-4 rounded-full min-h-[44px] flex items-center justify-center md:py-2 ${
+                  isActive ? 'text-white opacity-100 bg-white/10' : 'opacity-50 hover:opacity-80 active:opacity-80'
                 }`}
               >
                 {label}
@@ -309,10 +298,10 @@ const TimerView: React.FC<TimerViewProps> = ({
             disabled={totalDuration >= MAX_TIMER_SECONDS}
             whileHover={totalDuration < MAX_TIMER_SECONDS ? { scale: 1.05, opacity: 1 } : {}}
             whileTap={totalDuration < MAX_TIMER_SECONDS ? { scale: 0.98 } : {}}
-            className={`flex items-center gap-1.5 text-[11px] tracking-[0.4em] py-2 px-3 rounded-full border transition-all duration-500 ${
+            className={`flex items-center gap-1.5 text-[11px] tracking-[0.4em] py-2 px-3 rounded-full border transition-all duration-500 min-h-[44px] items-center justify-center ${
               totalDuration >= MAX_TIMER_SECONDS
                 ? 'opacity-30 cursor-not-allowed border-white/10'
-                : 'opacity-60 hover:opacity-100 border-white/20 hover:border-white/40'
+                : 'opacity-60 hover:opacity-100 active:opacity-100 border-white/20 hover:border-white/40'
             }`}
             title="加 1 分钟（最多 60 分钟）"
           >
@@ -321,7 +310,7 @@ const TimerView: React.FC<TimerViewProps> = ({
           </motion.button>
         </div>
 
-        <div className="flex items-center space-x-20 relative">
+        <div className="flex items-center space-x-12 relative md:space-x-20">
           {/* Glow behind play button - always present, just fades */}
           <motion.div 
             animate={{ 
@@ -336,7 +325,7 @@ const TimerView: React.FC<TimerViewProps> = ({
             className="absolute w-44 h-44 rounded-full bg-amber-500/40 blur-[50px] pointer-events-none"
           />
           
-          <button onClick={onReset} className="transition-all duration-1000 hover:rotate-180 opacity-30 hover:opacity-100 text-white"><RefreshCw className="w-6 h-6" /></button>
+          <button onClick={onReset} className="transition-all duration-1000 hover:rotate-180 opacity-30 hover:opacity-100 active:opacity-100 text-white min-w-[44px] min-h-[44px] flex items-center justify-center md:min-w-[48px] md:min-h-[48px]"><RefreshCw className="w-5 h-5 md:w-6 md:h-6" /></button>
           <motion.button 
             onClick={onTogglePlay}
             whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
@@ -345,16 +334,12 @@ const TimerView: React.FC<TimerViewProps> = ({
               borderColor: isControlsHovered ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)",
               boxShadow: isControlsHovered ? "0 0 40px rgba(245, 158, 11, 0.25)" : "0 0 0px rgba(245, 158, 11, 0)",
             }}
-            transition={{ 
-              type: "tween",
-              duration: 2,
-              ease: "easeInOut"
-            }}
-            className="w-24 h-24 rounded-full border flex items-center justify-center bg-white/5"
+            transition={{ type: "tween", duration: 2, ease: "easeInOut" }}
+            className="w-20 h-20 min-w-[72px] min-h-[72px] rounded-full border flex items-center justify-center bg-white/5 md:w-24 md:h-24 md:min-w-0 md:min-h-0"
           >
-            {isPlaying ? <Pause className={`w-7 h-7 transition-colors duration-1000 ${isExpiring || isOvertime ? 'text-amber-500' : 'text-white/70'}`} /> : <Play className={`w-7 h-7 ml-1 transition-colors duration-1000 ${isExpiring || isOvertime ? 'text-amber-500' : 'text-white/70'}`} />}
+            {isPlaying ? <Pause className={`w-6 h-6 md:w-7 md:h-7 transition-colors duration-1000 ${isExpiring || isOvertime ? 'text-amber-500' : 'text-white/70'}`} /> : <Play className={`w-6 h-6 md:w-7 md:h-7 ml-1 transition-colors duration-1000 ${isExpiring || isOvertime ? 'text-amber-500' : 'text-white/70'}`} />}
           </motion.button>
-          <button onClick={onNextBg} className="transition-opacity duration-700 opacity-30 hover:opacity-100 text-white" title="切换背景"><Sparkles className="w-6 h-6" /></button>
+          <button onClick={onNextBg} className="transition-opacity duration-700 opacity-30 hover:opacity-100 active:opacity-100 text-white min-w-[44px] min-h-[44px] flex items-center justify-center md:min-w-[48px] md:min-h-[48px]" title="切换背景"><Sparkles className="w-5 h-5 md:w-6 md:h-6" /></button>
         </div>
 
         <div className="w-full max-w-xl space-y-5 relative">

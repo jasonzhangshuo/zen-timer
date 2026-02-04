@@ -10,11 +10,12 @@ View your app in AI Studio: https://ai.studio/apps/temp/2
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js
 
+1. Install dependencies: `npm install`
+2. Run the app: `npm run dev`
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 部署
+
+- **正式环境（国内）**：见 [deploy-to-server.md](deploy-to-server.md)，后续更新以该文档为准，发布到 http://115.191.26.38
+- **海外**：Vercel 自动部署 https://zen-timer-rho.vercel.app（推送 main/production 后）

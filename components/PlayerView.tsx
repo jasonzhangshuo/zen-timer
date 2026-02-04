@@ -70,35 +70,35 @@ const PlayerView: React.FC<PlayerViewProps> = ({
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="flex flex-col items-center justify-between h-full py-12 px-12 font-sans-sc">
+    <div className="flex flex-col items-center justify-between h-full py-6 px-4 font-sans-sc md:py-12 md:px-12">
       {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full flex justify-between items-center"
       >
-        <div className="space-y-1">
-          <h2 className="text-xl font-extralight tracking-[0.5em] text-white/90">{trackTitle}</h2>
-          <p className="text-[9px] tracking-[0.4em] opacity-30 uppercase">Fellowship Session</p>
+        <div className="space-y-1 min-w-0 flex-1 md:flex-initial">
+          <h2 className="text-base font-extralight tracking-[0.3em] text-white/90 truncate md:text-xl md:tracking-[0.5em]">{trackTitle}</h2>
+          <p className="text-[8px] tracking-[0.4em] opacity-30 uppercase md:text-[9px]">Fellowship Session</p>
         </div>
         <button 
           onClick={onBack}
-          className="p-3 border border-white/5 rounded-full hover:bg-white/10 transition-all duration-700 group"
+          className="p-3 border border-white/5 rounded-full hover:bg-white/10 active:bg-white/10 transition-all duration-700 group shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <X className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" />
         </button>
       </motion.div>
 
-      {/* Main Content */}
-      <div className="flex-1 w-full flex items-center justify-center relative">
-        <div className="flex flex-col items-center space-y-12">
+      {/* Main Content：手机缩小圆环；桌面大圆环 */}
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 overflow-hidden md:overflow-visible">
+        <div className="flex flex-col items-center space-y-6 md:space-y-12">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-4"
+            className="text-center space-y-2 md:space-y-4"
           >
-            <span className="text-[10px] tracking-[0.8em] text-amber-500/60 uppercase font-light">Guide Phase</span>
-            <h1 className="text-6xl font-extralight tracking-[0.6em] ml-6">{phrase}</h1>
+            <span className="text-[9px] tracking-[0.5em] text-amber-500/60 uppercase font-light md:text-[10px] md:tracking-[0.8em]">Guide Phase</span>
+            <h1 className="text-4xl font-extralight tracking-[0.35em] ml-2 md:text-6xl md:tracking-[0.6em] md:ml-6">{phrase}</h1>
             <motion.p
               key={currentCaption?.text || 'empty'}
               initial={{ opacity: 0, y: 6, filter: 'blur(6px)' }}
@@ -111,7 +111,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({
           </motion.div>
 
           <div 
-            className="relative flex items-center justify-center"
+            className="relative flex items-center justify-center scale-[0.58] origin-center md:scale-100"
             onMouseEnter={() => setIsProgressHovered(true)}
             onMouseLeave={() => setIsProgressHovered(false)}
           >
@@ -124,8 +124,8 @@ const PlayerView: React.FC<PlayerViewProps> = ({
               />
             )}
 
-            {/* Circular Progress */}
-            <svg className="w-[400px] h-[400px] transform -rotate-90 cursor-default">
+            {/* Circular Progress：手机由父级 scale 缩小 */}
+            <svg className="w-[400px] h-[400px] transform -rotate-90 cursor-default touch-none md:touch-auto">
               <defs>
                 <filter id="progressGlow" x="-50%" y="-50%" width="200%" height="200%">
                   <feGaussianBlur stdDeviation="4" result="blur" />
@@ -209,7 +209,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({
               </motion.button>
               
               <motion.div 
-                className="mt-10 text-center"
+                className="mt-6 text-center md:mt-10"
                 animate={{
                   opacity: isProgressHovered ? 1 : 0.6,
                 }}
@@ -246,26 +246,26 @@ const PlayerView: React.FC<PlayerViewProps> = ({
         </div>
       </div>
 
-      {/* Footer Navigation - Centered text now replaced entry button */}
+      {/* Footer Navigation */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="w-full flex justify-between items-end"
+        className="w-full flex flex-wrap justify-center gap-3 text-center md:flex-nowrap md:justify-between md:items-end md:gap-0"
       >
-        <div className="space-y-2 opacity-30">
-          <p className="text-[9px] tracking-[0.4em] uppercase">Natural Resonance</p>
+        <div className="space-y-2 opacity-30 order-2 md:order-1">
+          <p className="text-[8px] tracking-[0.4em] uppercase md:text-[9px]">Natural Resonance</p>
           <div className="flex items-center space-x-3">
             <div className="w-12 h-[1px] bg-white/40" />
             <span className="text-[9px] tracking-[0.2em]">432Hz</span>
           </div>
         </div>
         
-        <div className="flex flex-col items-center space-y-2 opacity-20 mb-1">
+        <div className="flex flex-col items-center space-y-2 opacity-20 mb-1 order-2">
            <div className="w-1 h-1 bg-white rounded-full animate-bounce" />
-           <span className="text-[8px] tracking-[0.8em] uppercase">Meditation in Progress</span>
+           <span className="text-[7px] tracking-[0.8em] uppercase md:text-[8px]">Meditation in Progress</span>
         </div>
         
-        <div className="opacity-20 text-xs tracking-[1em] select-none pointer-events-none uppercase">
+        <div className="opacity-20 text-[10px] tracking-[0.6em] select-none pointer-events-none uppercase w-full order-1 md:order-3 md:w-auto md:text-xs md:tracking-[1em]">
           归真 寻径
         </div>
       </motion.div>
