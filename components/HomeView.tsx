@@ -52,10 +52,7 @@ const HomeView: React.FC<HomeViewProps> = ({
         className="flex flex-col items-center w-full max-w-4xl flex-1 min-h-0 justify-center overflow-y-auto overflow-x-hidden md:overflow-visible"
         style={{ minHeight: '40vh', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}
       >
-        <div
-          className="flex flex-col items-center gap-4 mb-6 w-full flex-shrink-0 md:flex-row md:flex-wrap md:justify-center md:gap-6 md:mb-10 overflow-visible"
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%', flexShrink: 0 }}
-        >
+        <div className="flex flex-col items-center gap-4 mb-6 w-full flex-shrink-0 md:flex-row md:flex-wrap md:justify-center md:gap-6 md:mb-10 overflow-visible">
           {tracks.map((track, i) => {
             const cardBgUrl = backgrounds[track.backgroundIndex] ?? backgrounds[0];
             const subtitleEn = CARD_SUBTITLE[track.id] ?? track.subtitle;

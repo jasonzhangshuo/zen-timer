@@ -98,15 +98,17 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [isPlaying, view]);
 
-  // 倒计时结束时播放磬/颂钵声（仅从 1→0 触发一次）
-  // 音源：Buddha bell / Tibetan singing bowl (CC BY-NC 4.0). 可替换为本地 timer-bell.mp3 以离线或商用.
-  const TIMER_END_BELL_URL = 'https://orangefreesounds.com/wp-content/uploads/2022/12/Buddha-bell-sound.mp3';
+  // 倒计时结束时播放本地提示音 daojishi.MP3（仅从 1→0 触发一次）
+  const timerEndSoundUrl = useMemo(
+    () => new URL('./daojishi.MP3', import.meta.url).href,
+    []
+  );
 
   const playTimerEndBell = useCallback(() => {
-    const audio = new Audio(TIMER_END_BELL_URL);
+    const audio = new Audio(timerEndSoundUrl);
     audio.volume = 0.8;
-    const played = audio.play().catch(() => {
-      // 外链失败（CORS/网络）时回退到合成钟声
+    audio.play().catch(() => {
+      // 本地文件加载失败时回退到合成钟声
       try {
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         const now = ctx.currentTime;
@@ -124,7 +126,7 @@ const App: React.FC = () => {
         osc.stop(now + 2.5);
       } catch (_) {}
     });
-  }, []);
+  }, [timerEndSoundUrl]);
 
   useEffect(() => {
     if (view !== ViewType.TIMER) return;
