@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Maximize2, Minimize2, Clock, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Track } from '../types';
@@ -18,6 +18,75 @@ const CARD_SUBTITLE: Record<string, string> = {
   cijing: 'LOVING KINDNESS',
 };
 
+/** 单张歌曲封面卡片，用于桌面列表与手机端 carousel 复用 */
+function TrackCard({
+  track,
+  index,
+  onSelect,
+  className = '',
+  slotClassName = '',
+  enableFloat = true,
+}: {
+  track: Track;
+  index: number;
+  onSelect: () => void;
+  className?: string;
+  slotClassName?: string;
+  enableFloat?: boolean;
+}) {
+  const cardBgUrl = backgrounds[track.backgroundIndex] ?? backgrounds[0];
+  const subtitleEn = CARD_SUBTITLE[track.id] ?? track.subtitle;
+  return (
+    <motion.div
+      className={`overflow-visible ${slotClassName}`}
+      animate={enableFloat ? { y: [0, -10, 0] } : undefined}
+      transition={
+        enableFloat
+          ? {
+              duration: 4.2 + index * 0.6,
+              repeat: Infinity,
+              repeatType: 'reverse',
+              ease: 'easeInOut',
+              delay: index * 0.8,
+            }
+          : undefined}
+    >
+      <button
+        type="button"
+        onClick={onSelect}
+        className={`home-card group relative flex flex-col text-left rounded-2xl border border-white/15 overflow-hidden
+          hover:border-amber-500/40 hover:shadow-[0_0_48px_rgba(245,158,11,0.2)]
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent
+          ${className}`}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 + index * 0.1, duration: 0.5, ease: 'easeOut' }}
+          className="absolute inset-0 flex flex-col"
+        >
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-[filter] duration-200 group-hover:brightness-110"
+            style={{ backgroundImage: `url(${cardBgUrl})` }}
+          />
+          <div className="absolute inset-0 bg-black/55 transition-colors duration-200 group-hover:bg-black/40" />
+          <div className="relative flex flex-col flex-1 p-5 z-10">
+            <h3 className="text-lg font-extralight tracking-[0.2em] text-white mt-auto">{track.title}</h3>
+            <p className="text-[10px] tracking-[0.2em] text-white/50 uppercase mt-1">{subtitleEn}</p>
+          </div>
+          <div className="relative px-5 pb-5 z-10 flex items-center gap-1 text-[10px] tracking-[0.15em] text-white/50 transition-colors duration-200 group-hover:text-amber-500/90 mt-auto">
+            <span>开始聆听</span>
+            <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </div>
+        </motion.div>
+      </button>
+    </motion.div>
+  );
+}
+
+const CAROUSEL_CARD_W = 260;
+const CAROUSEL_SLOT_W = 200;
+
 const HomeView: React.FC<HomeViewProps> = ({
   tracks,
   onSelectTrack,
@@ -25,6 +94,23 @@ const HomeView: React.FC<HomeViewProps> = ({
   onToggleFullscreen,
   isFullscreen,
 }) => {
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const setVars = () => {
+      const w = el.offsetWidth;
+      const pad = Math.max(0, (w - CAROUSEL_SLOT_W) / 2);
+      el.style.setProperty('--carousel-pad', `${pad}px`);
+      el.style.setProperty('--carousel-slot', `${CAROUSEL_SLOT_W}px`);
+    };
+    setVars();
+    const ro = new ResizeObserver(setVars);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-between h-full py-5 px-4 md:py-10 md:px-8">
       {/* Header */}
@@ -47,66 +133,46 @@ const HomeView: React.FC<HomeViewProps> = ({
         </button>
       </motion.div>
 
-      {/* Main：手机竖排单列；桌面横排卡片（内联样式兜底，避免 Tailwind 未加载时只有一条线） */}
-      <div
-        className="flex flex-col items-center w-full max-w-4xl flex-1 min-h-0 justify-center overflow-y-auto overflow-x-hidden md:overflow-visible"
-        style={{ minHeight: '40vh', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}
-      >
-        <div className="flex flex-col items-center gap-4 mb-6 w-full flex-shrink-0 md:flex-row md:flex-wrap md:justify-center md:gap-6 md:mb-10 overflow-visible">
-          {tracks.map((track, i) => {
-            const cardBgUrl = backgrounds[track.backgroundIndex] ?? backgrounds[0];
-            const subtitleEn = CARD_SUBTITLE[track.id] ?? track.subtitle;
-            return (
-              <motion.div
-                key={track.id}
-                className="overflow-visible"
-                style={{ width: '100%', maxWidth: 280 }}
-                animate={{ y: [0, -10, 0] }}
-                transition={{
-                  duration: 4.2 + i * 0.6,
-                  repeat: Infinity,
-                  repeatType: 'reverse',
-                  ease: 'easeInOut',
-                  delay: i * 0.8,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => onSelectTrack(track.id)}
-                  className="home-card group relative flex flex-col text-left rounded-2xl w-full max-w-[280px] min-h-[220px] border border-white/15 overflow-hidden
-                    hover:border-amber-500/40 hover:shadow-[0_0_48px_rgba(245,158,11,0.2)]
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent
-                    md:w-[200px] md:max-w-none md:min-h-[280px] md:rounded-[1.75rem]"
-                  style={{ width: '100%', maxWidth: 280, minHeight: 220, border: '1px solid rgba(255,255,255,0.15)', borderRadius: 16, display: 'flex', flexDirection: 'column', textAlign: 'left', position: 'relative', overflow: 'hidden' }}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.35 + i * 0.1, duration: 0.5, ease: 'easeOut' }}
-                    className="absolute inset-0 flex flex-col"
-                  >
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-[filter] duration-200 group-hover:brightness-110"
-                    style={{ backgroundImage: `url(${cardBgUrl})` }}
-                  />
-                  <div className="absolute inset-0 bg-black/55 transition-colors duration-200 group-hover:bg-black/40" />
-                  <div className="relative flex flex-col flex-1 p-5 z-10">
-                    <h3 className="text-lg font-extralight tracking-[0.2em] text-white mt-auto">
-                      {track.title}
-                    </h3>
-                    <p className="text-[10px] tracking-[0.2em] text-white/50 uppercase mt-1">
-                      {subtitleEn}
-                    </p>
-                  </div>
-                  <div className="relative px-5 pb-5 z-10 flex items-center gap-1 text-[10px] tracking-[0.15em] text-white/50 transition-colors duration-200 group-hover:text-amber-500/90 mt-auto">
-                    <span>开始聆听</span>
-                    <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </div>
-                </motion.div>
-              </button>
-              </motion.div>
-            );
-          })}
+      {/* Main：手机端横排叠加轮播（左右滑动、默认居中）；桌面横排卡片 */}
+      <div className="flex flex-col items-center w-full max-w-4xl flex-1 min-h-0 justify-center overflow-y-auto overflow-x-hidden md:overflow-visible">
+        {/* 手机端：Apple Music 风格横滑叠加卡片，scroll-snap 居中 */}
+        <div
+          ref={carouselRef}
+          className="home-carousel md:hidden w-full flex-shrink-0 mb-6 overflow-x-auto overflow-y-visible flex items-center flex-nowrap gap-0 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-webkit-overflow-scrolling:touch]"
+          style={{
+            paddingLeft: 'var(--carousel-pad, 0)',
+            paddingRight: 'var(--carousel-pad, 0)',
+          }}
+        >
+          {tracks.map((track, i) => (
+            <div
+              key={track.id}
+              className="flex-shrink-0 snap-center home-carousel-slot"
+              style={{ width: 'var(--carousel-slot, 200px)' }}
+            >
+              <TrackCard
+                track={track}
+                index={i}
+                onSelect={() => onSelectTrack(track.id)}
+                className={`w-[260px] min-h-[200px] ${i === 0 ? '' : '-ml-[30px]'}`}
+                enableFloat={false}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* 桌面端：横排卡片 */}
+        <div className="hidden md:flex flex-row flex-wrap justify-center gap-6 mb-10 overflow-visible flex-shrink-0">
+          {tracks.map((track, i) => (
+            <TrackCard
+              key={track.id}
+              track={track}
+              index={i}
+              onSelect={() => onSelectTrack(track.id)}
+              className="w-[200px] min-h-[280px] rounded-[1.75rem]"
+              enableFloat={true}
+            />
+          ))}
         </div>
 
         {/* 开始分享计时 */}

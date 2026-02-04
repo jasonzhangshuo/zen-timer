@@ -182,7 +182,7 @@ const TimerView: React.FC<TimerViewProps> = ({
           </div>
 
           {/* Dynamic Phase Messaging */}
-          <div className="mt-4 h-10 flex items-center justify-center md:mt-8 md:h-12">
+          <div className="mt-4 min-h-[3.5rem] flex items-center justify-center md:mt-8 md:min-h-[4rem]">
             <AnimatePresence mode="wait">
               {isOvertime ? (
                 <motion.div 
@@ -190,7 +190,7 @@ const TimerView: React.FC<TimerViewProps> = ({
                   initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, filter: 'blur(5px)' }}
-                  className="flex flex-col items-center space-y-2"
+                  className="flex flex-col items-center space-y-2 md:space-y-3"
                 >
                   <motion.span 
                     animate={isOvertimeWarning ? { 
@@ -202,36 +202,55 @@ const TimerView: React.FC<TimerViewProps> = ({
                       repeat: Infinity, 
                       ease: "easeInOut" 
                     } : {}}
-                    className={`text-amber-500 text-sm tracking-[0.8em] transition-all duration-500 ${isOvertimeWarning ? 'font-medium' : 'font-light'}`}
+                    className={`text-amber-500 text-sm md:text-base tracking-[0.8em] transition-all duration-500 ${isOvertimeWarning ? 'font-medium' : 'font-light'}`}
                   >
                     随 喜 学 长 分 享
                   </motion.span>
                   <motion.div 
                     animate={isOvertimeWarning ? { 
-                      opacity: [0.8, 1, 0.8]
-                    } : { opacity: 0.8 }}
+                      opacity: [0.9, 1, 0.9]
+                    } : { opacity: 0.95 }}
                     transition={isOvertimeWarning ? { 
                       duration: 1.5, 
                       repeat: Infinity, 
                       ease: "easeInOut" 
                     } : {}}
-                    className="flex items-center space-x-3"
+                    className="flex items-center gap-2 md:gap-3"
                   >
-                    <Clock className={`w-3.5 h-3.5 text-amber-500 ${isOvertimeWarning ? 'animate-pulse' : ''}`} />
-                    <span className={`text-[10px] tracking-[0.3em] text-amber-500 uppercase transition-all duration-500 ${isOvertimeWarning ? 'font-medium' : 'font-light'}`}>
+                    <Clock className={`w-4 h-4 md:w-5 md:h-5 text-amber-500 flex-shrink-0 ${isOvertimeWarning ? 'animate-pulse' : ''}`} />
+                    <motion.span
+                      animate={isOvertimeWarning ? {
+                        opacity: [0.9, 1, 0.9],
+                        color: ['#d97706', '#fbbf24', '#d97706'],
+                        textShadow: ['0 0 12px rgba(245,158,11,0.35)', '0 0 24px rgba(251,191,36,0.6)', '0 0 12px rgba(245,158,11,0.35)'],
+                      } : {}}
+                      transition={isOvertimeWarning ? { duration: 2.2, repeat: Infinity, ease: 'easeInOut' } : {}}
+                      className={`font-semibold text-sm tracking-[0.25em] md:text-base md:tracking-[0.35em] uppercase ${isOvertimeWarning ? 'font-bold' : ''}`}
+                      style={!isOvertimeWarning ? { color: '#d97706', textShadow: '0 0 12px rgba(245,158,11,0.4)' } : undefined}
+                    >
                       分享已超时
-                    </span>
+                    </motion.span>
                   </motion.div>
                 </motion.div>
               ) : isExpiring ? (
                 <motion.div 
                   key="expiring-msg"
                   initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }}
-                  animate={{ opacity: 0.8, y: 0, filter: 'blur(0px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, filter: 'blur(5px)' }}
                   className="flex flex-col items-center"
                 >
-                  <span className="text-amber-500 text-sm tracking-[0.8em] font-light">即将分享到时，随喜分享</span>
+                  <motion.span
+                    animate={{
+                      opacity: [0.85, 1, 0.85],
+                      color: ['#b45309', '#f59e0b', '#b45309'],
+                      textShadow: ['0 0 10px rgba(245,158,11,0.3)', '0 0 20px rgba(245,158,11,0.55)', '0 0 10px rgba(245,158,11,0.3)'],
+                    }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                    className="text-amber-500 text-sm md:text-base tracking-[0.4em] md:tracking-[0.5em] font-semibold"
+                  >
+                    即将分享到时，随喜分享
+                  </motion.span>
                 </motion.div>
               ) : null}
             </AnimatePresence>

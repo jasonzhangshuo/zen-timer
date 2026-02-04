@@ -22,9 +22,29 @@ body {
   body { -webkit-tap-highlight-color: transparent; }
   button, [role="button"] { touch-action: manipulation; }
 }
-.home-card:hover { transform: scale(1.1); }
 .home-card {
-  transition: transform 0.5s ease-out, box-shadow 0.5s ease-out, border-color 0.4s ease-out;
+  transition: box-shadow 0.4s ease-out, border-color 0.4s ease-out;
+  transform-origin: center;
+}
+.home-card:hover {
+  box-shadow: 0 0 56px rgba(245, 158, 11, 0.28);
+}
+/* 仅桌面端做轻微放大，避免轮播内 scale 触发布局抖动 */
+@media (min-width: 768px) {
+  .home-card {
+    transition: transform 0.5s ease-out, box-shadow 0.4s ease-out, border-color 0.4s ease-out;
+  }
+  .home-card:hover {
+    transform: scale(1.04);
+  }
+}
+
+/* 手机端首页：横滑叠加卡片轮播，隐藏滚动条 */
+.home-carousel::-webkit-scrollbar {
+  display: none;
+}
+.home-carousel {
+  -ms-overflow-style: none;
 }
 @keyframes drift-light {
   0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }

@@ -23,47 +23,34 @@ export const backgrounds = [
   "https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?auto=format&fit=crop&q=80&w=2400", // 秋日森林
 ];
 
-// 超时警告专用莲花背景（暗色背景粉色莲花）
-const lotusBackground = "https://images.unsplash.com/photo-1474557157379-8aa74a6ef541?auto=format&fit=crop&q=80&w=2400"; // 暗色背景莲花
+// 超时 30 秒专用：深色渐变背景，无图、易感知超时
+const overtimeWarningGradient = 'radial-gradient(ellipse 120% 100% at 50% 50%, #1a0a08 0%, #0f0505 35%, #080204 70%, #030102 100%)';
 
 const Background: React.FC<BackgroundProps> = ({ currentView, bgIndex, theme, isOvertime = false, isOvertimeWarning = false }) => {
   const isDark = theme === 'DARK';
   const [displayIndex, setDisplayIndex] = useState(bgIndex);
   const [loadedIndexes, setLoadedIndexes] = useState(() => new Set<number>());
-  const [lotusLoaded, setLotusLoaded] = useState(false);
   
-  // 预加载莲花背景
-  useEffect(() => {
-    const img = new Image();
-    img.src = lotusBackground;
-    img.onload = () => setLotusLoaded(true);
-  }, []);
-  
-  // 首页无遮罩（纯色渐变）；其他页统一遮罩；超时后背景遮罩变浅
+  // 首页无遮罩（纯色渐变）；其他页统一遮罩；超时 30 秒用深色底
   const getOverlayOpacity = () => {
     if (currentView === ViewType.HOME) return 0;
     if (currentView !== ViewType.TIMER) return 0.45;
-    if (isOvertimeWarning) return 0.3; // 莲花背景更透
+    if (isOvertimeWarning) return 0.5; // 深色背景上略加遮罩统一色调
     return isOvertime ? 0.35 : 0.45;
   };
 
   const getBrightness = () => {
     if (currentView !== ViewType.TIMER) return isDark ? 0.8 : 1.1;
-    if (isOvertimeWarning) return 1.1; // 莲花背景稍亮
-    // 超时模式下提升亮度，营造"光明感"
-    if (isOvertime) return isDark ? 1.3 : 1.4; 
+    if (isOvertimeWarning) return 1; // 深色渐变不再调亮
+    if (isOvertime) return isDark ? 1.3 : 1.4;
     return isDark ? 1.0 : 1.2;
   };
 
   const getSaturate = () => {
-    if (isOvertimeWarning) return 'saturate(1.15)'; // 莲花更鲜艳
     return isOvertime ? 'saturate(1.2)' : 'saturate(0.8)';
   };
   
-  const getCurrentBackground = () => {
-    if (isOvertimeWarning && lotusLoaded) return lotusBackground;
-    return backgrounds[displayIndex];
-  };
+  const getCurrentBackground = () => backgrounds[displayIndex];
 
   useEffect(() => {
     let isActive = true;
@@ -121,7 +108,7 @@ const Background: React.FC<BackgroundProps> = ({ currentView, bgIndex, theme, is
   }, [loadedIndexes]);
 
   const isHomeView = currentView === ViewType.HOME;
-  const bgKey = isHomeView ? 'home' : (isOvertimeWarning ? 'lotus' : `bg-${displayIndex}`);
+  const bgKey = isHomeView ? 'home' : (isOvertimeWarning ? 'overtime-warning' : `bg-${displayIndex}`);
 
   return (
     <div className="fixed inset-0 z-0 bg-black" style={{ overflow: isHomeView ? 'visible' : 'hidden' }}>
@@ -135,9 +122,19 @@ const Background: React.FC<BackgroundProps> = ({ currentView, bgIndex, theme, is
             transition={{ duration: 1, ease: "easeInOut" }}
             className="absolute inset-0 bg-gradient-to-b from-[#10121c] via-[#14182a] to-[#0a0c14]"
           />
+        ) : isOvertimeWarning ? (
+          <motion.div 
+            key="overtime-warning"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ background: overtimeWarningGradient }}
+          />
         ) : (
           <motion.div 
-            key={isOvertimeWarning ? 'lotus' : `bg-${displayIndex}`}
+            key={`bg-${displayIndex}`}
             initial={{ opacity: 0 }}
             animate={{ 
               opacity: 1,

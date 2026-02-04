@@ -133,6 +133,8 @@ const App: React.FC = () => {
     const prev = prevCountdownRef.current;
     prevCountdownRef.current = countdown;
     if (prev === 1 && countdown === 0) playTimerEndBell();
+    // 超时后每满 1 分钟播放一次提示音（-60、-120、-180…）
+    if (countdown < 0 && countdown % 60 === 0 && prev === countdown + 1) playTimerEndBell();
   }, [view, countdown, playTimerEndBell]);
 
   const togglePlay = useCallback(() => setIsPlaying((prev) => !prev), []);
